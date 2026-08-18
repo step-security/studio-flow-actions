@@ -1,0 +1,28 @@
+# Capture flows edited in the Studio console back into the repository.
+#
+# Run this on demand after console work. Skipping it means the next deployment
+# publishes the repository's older definitions over the top of those edits.
+name: Capture Studio Flow Changes
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  capture-flows:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Pull definitions from the development account
+        uses: step-security/studio-flow-actions/sync@v1
+        with:
+          CONFIG_PATH: studio-config.json
+          # Turns account-specific SIDs back into names, which is what lets the
+          # captured definition deploy to a different account later.
+          ADD_MISSING_DEPLOY_PROPERTIES: true
+          TWILIO_API_KEY: ${{ vars.DEVELOP_TWILIO_API_KEY }}
+          TWILIO_API_SECRET: ${{ secrets.DEVELOP_TWILIO_API_SECRET }}

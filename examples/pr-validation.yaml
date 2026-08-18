@@ -1,0 +1,23 @@
+# Gate pull requests on the flow definitions being well-formed.
+#
+# No Twilio credentials are involved, which is what makes this safe to run on
+# pull requests opened from forks.
+name: Validate Studio Flows on PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - flows/**.json
+      - studio-config.json
+
+jobs:
+  check-definitions:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check flow definitions
+        uses: step-security/studio-flow-actions/check@v1
+        with:
+          CONFIG_PATH: studio-config.json

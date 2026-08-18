@@ -1,0 +1,48 @@
+# Validate against the target account, then publish to it.
+#
+# The two jobs receive identical inputs deliberately: validation is only a
+# meaningful gate if it exercises exactly what the deployment will publish.
+name: Release Studio Flows
+
+on:
+  workflow_dispatch:
+    inputs:
+      ENVIRONMENT:
+        description: Target environment
+        type: choice
+        options: [develop, uat, production]
+
+env:
+  TWILIO_API_KEY: ${{ vars[format('{0}_TWILIO_API_KEY', inputs.ENVIRONMENT)] }}
+  TWILIO_API_SECRET: ${{ secrets[format('{0}_TWILIO_API_SECRET', inputs.ENVIRONMENT)] }}
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve and validate against ${{ inputs.ENVIRONMENT }}
+        uses: step-security/studio-flow-actions/validate@v1
+        with:
+          CONFIG_PATH: studio-config.json
+          # Stops the release if a flow was edited in the console since the last
+          # deployment, which this run would otherwise discard.
+          VALIDATE_PREVIOUS_REVISION_USER: true
+          TWILIO_API_KEY: ${{ env.TWILIO_API_KEY }}
+          TWILIO_API_SECRET: ${{ env.TWILIO_API_SECRET }}
+
+  publish:
+    needs: dry-run
+    runs-on: ubuntu-24.04
+    # A GitHub environment with required reviewers turns this into a manual gate.
+    environment: ${{ inputs.ENVIRONMENT }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Publish to ${{ inputs.ENVIRONMENT }}
+        uses: step-security/studio-flow-actions/deploy@v1
+        with:
+          CONFIG_PATH: studio-config.json
+          TWILIO_API_KEY: ${{ env.TWILIO_API_KEY }}
+          TWILIO_API_SECRET: ${{ env.TWILIO_API_SECRET }}

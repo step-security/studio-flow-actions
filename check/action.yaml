@@ -1,0 +1,21 @@
+name: Check Studio Flow
+description: Validates Studio Flow definitions in the repository without contacting Twilio
+author: 'step-security'
+
+inputs:
+  # --- what to check ---
+  CONFIG_PATH:
+    description: Location of the Studio configuration file, relative to the repository root
+    required: true
+
+  # --- credentials ---
+  TOKEN:
+    description: >-
+      Token used to read configuration or flow files straight from the repository
+      when they are not present on disk. Needs `contents: read`.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: node24
+  main: dist/index.js
