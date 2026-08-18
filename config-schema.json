@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Studio Flow Actions configuration",
+  "description": "Describes which Twilio Studio Flows to manage and how to resolve the account-specific values inside them.",
+  "type": "object",
+  "required": ["flows", "replaceWidgetTypes"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Location of this schema, for editor completion and validation."
+    },
+    "flows": {
+      "type": "array",
+      "description": "The Studio Flows this configuration manages.",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Friendly name of the flow. Used to locate it on the account unless 'sid' is given."
+          },
+          "path": {
+            "type": "string",
+            "description": "Location of the flow definition JSON, relative to the repository root."
+          },
+          "sid": {
+            "type": "string",
+            "pattern": "^FW[0-9a-fA-F]{32}$",
+            "description": "Targets one specific flow by SID, for when a friendly name is ambiguous."
+          },
+          "subflow": {
+            "type": "boolean",
+            "default": false,
+            "description": "Marks this flow as a subflow. Subflows are deployed before the flows that call them."
+          },
+          "allowCreate": {
+            "type": "boolean",
+            "default": false,
+            "description": "Permits the flow to be created when it is not already on the account, instead of failing."
+          }
+        }
+      }
+    },
+    "replaceWidgetTypes": {
+      "type": "array",
+      "description": "Widget types to rewrite at deploy time. A type left out of this list is published exactly as written.",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["run-function", "send-to-flex", "set-variables", "run-subflow", "enqueue-call"]
+      }
+    },
+    "functionServices": {
+      "type": "array",
+      "description": "Twilio Functions services whose URLs may appear in run-function widgets. Every referenced service must be declared here.",
+      "items": {
+        "type": "object",
+        "required": ["name", "environmentSuffix"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name of the service, or a regular expression when 'pattern' is enabled."
+          },
+          "environmentSuffix": {
+            "description": "Domain suffix of the environment to read. Use null for an environment with no suffix, or 0 to take whichever environment comes first.",
+            "oneOf": [{ "type": "string" }, { "type": "null" }, { "const": 0 }]
+          },
+          "pattern": {
+            "type": "boolean",
+            "default": false,
+            "description": "Treats 'name' as a regular expression. Use for services with generated names, such as Flex plugin library installs."
+          }
+        }
+      }
+    },
+    "workflowMap": {
+      "type": "object",
+      "description": "Pins a workflow name to a specific SID, taking precedence over the account lookup.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^WW[0-9a-fA-F]{32}$"
+      }
+    },
+    "subflowMap": {
+      "type": "object",
+      "description": "Pins a subflow name to a specific SID, taking precedence over the account lookup.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^FW[0-9a-fA-F]{32}$"
+      }
+    },
+    "variableReplacements": {
+      "type": "object",
+      "description": "Values written into matching set-variables widget keys. Keys a widget does not declare are ignored.",
+      "additionalProperties": { "type": "string" }
+    },
+    "customPropertyReplacements": {
+      "type": "array",
+      "description": "Direct property overrides, applied after all widget rewriting. Reaches any widget by name, including unmanaged types.",
+      "items": {
+        "type": "object",
+        "required": ["flowName", "widgetName", "propertyKey", "propertyValue"],
+        "additionalProperties": false,
+        "properties": {
+          "flowName": {
+            "type": "string",
+            "description": "Name of the flow, matching a 'flows' entry."
+          },
+          "widgetName": {
+            "type": "string",
+            "description": "Name of the widget within that flow."
+          },
+          "propertyKey": {
+            "type": "string",
+            "description": "Property to set on the widget."
+          },
+          "propertyValue": {
+            "type": "string",
+            "description": "Literal value to set."
+          }
+        }
+      }
+    },
+    "enableShellVariables": {
+      "type": "boolean",
+      "default": false,
+      "description": "Expands $VAR references in this file from the environment before it is parsed. An unset variable expands to an empty string."
+    }
+  }
+}

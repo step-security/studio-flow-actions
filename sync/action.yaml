@@ -1,0 +1,42 @@
+name: Sync Studio Flow
+description: Pulls live Studio Flow definitions from a Twilio account into source control and opens a pull request
+author: 'step-security'
+
+inputs:
+  # --- what to sync ---
+  CONFIG_PATH:
+    description: Location of the Studio configuration file, relative to the repository root
+    required: true
+
+  # --- behaviour ---
+  ADD_MISSING_DEPLOY_PROPERTIES:
+    description: |
+      Set to `true` to infer the name hints a deployment needs from the SIDs already present in the definition. Fills in:
+
+      - `send-to-flex` > `attributes` > `workflowName`
+      - `send-to-flex` > `attributes` > `channelName`
+      - `run-subflow` > `parameters` > `subflowName`
+      - `enqueue-call` > `task_attributes` > `workflowName`
+    required: false
+  DISABLE_CHECK:
+    description: Set to `true` to skip the offline validation that otherwise runs over each synced definition
+    required: false
+  SAVE_DIAGRAMS_TO_PATH:
+    description: Directory to write one SVG flow diagram per synced flow. Requires Docker on the runner.
+    required: false
+
+  # --- credentials ---
+  TWILIO_API_KEY:
+    description: SID of the Twilio API Key used for authentication
+    required: true
+  TWILIO_API_SECRET:
+    description: Secret associated with the Twilio API Key
+    required: true
+  TOKEN:
+    description: "Token used to commit the synced definitions and raise the pull request. Needs `contents: write` and `pull-requests: write`."
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: node24
+  main: dist/index.js

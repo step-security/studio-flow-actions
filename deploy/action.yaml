@@ -1,0 +1,33 @@
+name: Deploy Studio Flow
+description: Publishes the repository's Studio Flow definitions to a Twilio account
+author: 'step-security'
+
+inputs:
+  # --- what to publish ---
+  CONFIG_PATH:
+    description: Location of the Studio configuration file, relative to the repository root
+    required: true
+
+  # --- behaviour ---
+  COMMIT_MESSAGE:
+    description: (Optional) Message recorded against each published Studio Flow revision
+    required: false
+    default: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # --- credentials ---
+  TWILIO_API_KEY:
+    description: SID of the Twilio API Key used for authentication
+    required: true
+  TWILIO_API_SECRET:
+    description: Secret associated with the Twilio API Key
+    required: true
+  TOKEN:
+    description: >-
+      Token used to read configuration or flow files straight from the repository
+      when they are not present on disk. Needs `contents: read`.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: node24
+  main: dist/index.js

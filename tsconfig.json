@@ -1,0 +1,19 @@
+{
+  // module/moduleResolution must stay on the CommonJS pair. @actions/core 2.x and
+  // @actions/github 8.x are the last CJS majors; their next majors are ESM-only.
+  // See the "//deps" note in package.json before changing either of these.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["_lib/**/*.ts", "check/*.ts", "validate/*.ts", "deploy/*.ts", "sync/*.ts", "build.mts"]
+}
